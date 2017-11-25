@@ -13,9 +13,9 @@ describe GildedRose do
     context "regular item" do
       context "quality" do
         it "reduces in quality by 1 if sell in > 0" do
-          items = [Item.new("foo", 1, 1)]
+          items = [Item.new("foo", 2, 2)]
           GildedRose.new(items).update_quality()
-          expect(items[0].quality).to be 0
+          expect(items[0].quality).to be 1
         end
 
         it "reduces in quality by 2(doubles) if sell in is 0" do
