@@ -9,7 +9,7 @@ class GildedRose
       if item.name != "Aged Brie" and item.name != "Backstage passes to a TAFKAL80ETC concert"
         if item.quality > 0
           if item.name != "Sulfuras, Hand of Ragnaros"
-            item.quality = item.quality - 1
+            item.quality = max_limit_quality(item.quality) - 1
           end
         end
       else
@@ -50,6 +50,12 @@ class GildedRose
         end
       end
     end
+  end
+
+  private
+
+  def max_limit_quality(quality)
+    quality > 50 ? 50 : quality
   end
 end
 
