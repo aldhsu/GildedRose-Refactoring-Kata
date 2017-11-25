@@ -107,6 +107,12 @@ describe GildedRose do
           GildedRose.new(items).update_quality()
           expect(items[0].quality).to be 3
         end
+
+        it "has a max quality of 50" do
+          items = [Item.new("Backstage passes to a TAFKAL80ETC concert", 5, 49)]
+          GildedRose.new(items).update_quality()
+          expect(items[0].quality).to be 50
+        end
       end
 
       it "reduces sell in times by 1" do
