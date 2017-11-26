@@ -1,7 +1,6 @@
 class GildedRose
   # These exceptions can increase or decrease
   QUALITY_EXCEPTIONS = ["Aged Brie", "Backstage passes to a TAFKAL80ETC concert", "Sulfuras, Hand of Ragnaros"].freeze
-
   def initialize(items)
     @items = items
   end
@@ -11,29 +10,17 @@ class GildedRose
       update_sell_in(item)
 
       unless apply_item_rules(item)
-      unless QUALITY_EXCEPTIONS.include?(item.name)
-        change_quality(item, amount: -1)
-        change_quality(item, amount: -1) if item.sell_in < 0
-      else
-        change_quality(item)
-
-        if item.name == "Backstage passes to a TAFKAL80ETC concert"
-          change_quality(item) if item.sell_in < 10
-          change_quality(item) if item.sell_in < 5
+        unless QUALITY_EXCEPTIONS.include?(item.name)
+          change_quality(item, amount: -1)
+          change_quality(item, amount: -1) if item.sell_in < 0
+        else
+          change_quality(item)
         end
-      end
-
-      # after 0 sell in
-      if item.sell_in < 0
-        change_quality(item) if item.name == "Aged Brie"
-        item.quality = 0 if item.name == "Backstage passes to a TAFKAL80ETC concert"
       end
     end
   end
-  end
 
   private
-
   MAX_QUALITY = 50
   MIN_QUALITY = 0
 
@@ -64,6 +51,16 @@ class GildedRose
         item.quality += 1
         item.quality += 1 if item.sell_in < 0
       }),
+      "Backstage passes to a TAFKAL80ETC concert" => Artifact.new(
+        update: -> (item) {
+          item.quality += 1
+          item.quality += 1 if item.sell_in < 10
+          item.quality += 1 if item.sell_in < 5
+          item.quality = 0 if item.sell_in <= 0
+        }),
+    # "Sulfuras, Hand of Ragnaros" => {
+    #
+    # }
   }
 
   def apply_item_rules(item)
