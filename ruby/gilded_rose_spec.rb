@@ -50,7 +50,7 @@ describe GildedRose do
           expect(items[0].quality).to be 1
         end
 
-        it "increases in quality as twice as fast when sell_in >= 0" do
+        it "increases in quality as twice as fast when sell_in < 0" do
           items = [Item.new("Aged Brie", 0, 0)]
           GildedRose.new(items).update_quality()
           expect(items[0].quality).to be 2
