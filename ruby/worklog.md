@@ -16,3 +16,10 @@
 26/11/17
 ## Thoughts
 - Switches are based on the item name seems like a class is needed here
+- Created a class called Artifact that has programmable interfaces for updating item quality,
+    clamping max and min qualities and updating sell in
+- This has removed the interleaving of conditions entirely and the interface is simplified the only method that needs to be called in `apply_item_rules`
+- On completion I think if originally the duplication of code was left in this would have led to easier abstraction versus the initial attempt at reuse
+eg. Backstage pass logic was nested deep within just to reuse incrementing the item.quality by 1, the current solution I have arrived is basically a fancy switch
+with all reuse removed. Reinforces to me, bad abstractions are worse than duplication.
+

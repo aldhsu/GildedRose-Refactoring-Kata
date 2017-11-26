@@ -1,10 +1,9 @@
 class GildedRose
-  # These exceptions can increase or decrease
   def initialize(items)
     @items = items
   end
 
-  def update_quality()
+  def update_quality
     @items.each do |item|
       apply_item_rules(item)
     end
@@ -68,15 +67,26 @@ class GildedRose
         item.quality += -1
         item.quality += -1 if item.sell_in < 0
       },
+    ),
+    "conjured" =>  Artifact.new(
+      update_quality: ->(item) {
+        item.quality += -2
+        item.quality += -2 if item.sell_in < 0
+      },
     )
   }
 
   def apply_item_rules(item)
-    rule = ITEM_RULES.fetch(item.name, ITEM_RULES["default"])
+    rule = match_rule(item)
     rule.clamp_quality(item)
     rule.update_sell_in(item)
     rule.update_quality(item)
     rule.clamp_quality(item)
+  end
+
+  def match_rule(item)
+    return ITEM_RULES["conjured"] if item.name.match(/^conjured/i)
+    return ITEM_RULES.fetch(item.name, ITEM_RULES["default"])
   end
 
 end
