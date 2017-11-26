@@ -1,29 +1,19 @@
 class GildedRose
   # These exceptions can increase or decrease
-  QUALITY_EXCEPTIONS = ["Aged Brie", "Backstage passes to a TAFKAL80ETC concert", "Sulfuras, Hand of Ragnaros"].freeze
   def initialize(items)
     @items = items
   end
 
   def update_quality()
     @items.each do |item|
-      update_sell_in(item)
-
-      unless apply_item_rules(item)
-        unless QUALITY_EXCEPTIONS.include?(item.name)
-          change_quality(item, amount: -1)
-          change_quality(item, amount: -1) if item.sell_in < 0
-        else
-          change_quality(item)
-        end
-      end
+      apply_item_rules(item)
     end
   end
 
   private
+
   MAX_QUALITY = 50
   MIN_QUALITY = 0
-
 
   CLAMP_QUALITY = -> (item) do
     item.quality =  MAX_QUALITY if item.quality > MAX_QUALITY
@@ -31,13 +21,21 @@ class GildedRose
   end
 
   class Artifact
-    def initialize(update: -> (_) {}, clamp_quality: CLAMP_QUALITY)
-      @update = update
+    def initialize(
+      update_quality: -> (_) {},
+      clamp_quality: CLAMP_QUALITY,
+      update_sell_in: -> (item) { item.sell_in += -1 })
+      @update_quality = update_quality
+      @update_sell_in = update_sell_in
       @clamp_quality = clamp_quality
     end
 
-    def update(item)
-      @update.call(item)
+    def update_quality(item)
+      @update_quality.call(item)
+    end
+
+    def update_sell_in(item)
+      @update_sell_in.call(item)
     end
 
     def clamp_quality(item)
@@ -47,44 +45,38 @@ class GildedRose
 
   ITEM_RULES = {
     "Aged Brie" => Artifact.new(
-      update: -> (item) {
+      update_quality: -> (item) {
         item.quality += 1
         item.quality += 1 if item.sell_in < 0
-      }),
-      "Backstage passes to a TAFKAL80ETC concert" => Artifact.new(
-        update: -> (item) {
-          item.quality += 1
-          item.quality += 1 if item.sell_in < 10
-          item.quality += 1 if item.sell_in < 5
-          item.quality = 0 if item.sell_in <= 0
-        }),
-    # "Sulfuras, Hand of Ragnaros" => {
-    #
-    # }
+      }
+    ),
+    "Backstage passes to a TAFKAL80ETC concert" => Artifact.new(
+      update_quality: -> (item) {
+        item.quality += 1
+        item.quality += 1 if item.sell_in < 10
+        item.quality += 1 if item.sell_in < 5
+        item.quality = 0 if item.sell_in <= 0
+      }
+    ),
+    "Sulfuras, Hand of Ragnaros" => Artifact.new(
+      update_quality: ->(item) { item.quality = 80 },
+      update_sell_in: ->(_) {},
+      clamp_quality: ->(_) {}
+    ),
+    "default" =>  Artifact.new(
+      update_quality: ->(item) {
+        item.quality += -1
+        item.quality += -1 if item.sell_in < 0
+      },
+    )
   }
 
   def apply_item_rules(item)
-    if rules = ITEM_RULES.fetch(item.name, nil)
-      rules.update(item)
-      rules.clamp_quality(item)
-      true
-    end
-  end
-
-  def clamp_quality(quality)
-    return MAX_QUALITY if quality > MAX_QUALITY
-    return MIN_QUALITY if quality < MIN_QUALITY
-    quality
-  end
-
-  def update_sell_in(item)
-    return if item.name == "Sulfuras, Hand of Ragnaros"
-    item.sell_in = item.sell_in - 1
-  end
-
-  def change_quality(item, amount: 1)
-    test_quality = clamp_quality(item.quality) + amount
-    item.quality = clamp_quality(test_quality)
+    rule = ITEM_RULES.fetch(item.name, ITEM_RULES["default"])
+    rule.clamp_quality(item)
+    rule.update_sell_in(item)
+    rule.update_quality(item)
+    rule.clamp_quality(item)
   end
 
 end
