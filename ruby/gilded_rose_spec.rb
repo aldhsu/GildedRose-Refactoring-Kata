@@ -70,10 +70,10 @@ describe GildedRose do
           expect(items[0].sell_in).to be 999
         end
 
-        it "never decreases in value" do
+        it "never decreases in value and is always 80 quality" do
           items = [Item.new("Sulfuras, Hand of Ragnaros", 0, 50)]
           GildedRose.new(items).update_quality()
-          expect(items[0].quality).to be 50
+          expect(items[0].quality).to be 80
         end
       end
 
