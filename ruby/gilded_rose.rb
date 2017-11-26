@@ -10,6 +10,7 @@ class GildedRose
     @items.each do |item|
       update_sell_in(item)
 
+      unless apply_item_rules(item)
       unless QUALITY_EXCEPTIONS.include?(item.name)
         change_quality(item, amount: -1)
         change_quality(item, amount: -1) if item.sell_in < 0
@@ -29,11 +30,49 @@ class GildedRose
       end
     end
   end
+  end
 
   private
 
   MAX_QUALITY = 50
   MIN_QUALITY = 0
+
+
+  CLAMP_QUALITY = -> (item) do
+    item.quality =  MAX_QUALITY if item.quality > MAX_QUALITY
+    item.quality =  MIN_QUALITY if item.quality < MIN_QUALITY
+  end
+
+  class Artifact
+    def initialize(update: -> (_) {}, clamp_quality: CLAMP_QUALITY)
+      @update = update
+      @clamp_quality = clamp_quality
+    end
+
+    def update(item)
+      @update.call(item)
+    end
+
+    def clamp_quality(item)
+      @clamp_quality.call(item)
+    end
+  end
+
+  ITEM_RULES = {
+    "Aged Brie" => Artifact.new(
+      update: -> (item) {
+        item.quality += 1
+        item.quality += 1 if item.sell_in <= 0
+      }),
+  }
+
+  def apply_item_rules(item)
+    if rules = ITEM_RULES.fetch(item.name, nil)
+      rules.update(item)
+      rules.clamp_quality(item)
+      true
+    end
+  end
 
   def clamp_quality(quality)
     return MAX_QUALITY if quality > MAX_QUALITY

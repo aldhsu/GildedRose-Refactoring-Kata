@@ -11,3 +11,8 @@
 
 ## Refactoring strategies
 - Things are going to get worse before they get better
+- simplify the code so what is actually important can show
+
+26/11/17
+## Thoughts
+- Switches are based on the item name seems like a class is needed here
